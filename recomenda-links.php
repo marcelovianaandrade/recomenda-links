@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name:       Recomenda Links
- * Plugin URI:        https://cmosdrake.com.br
+ * Plugin URI:        https://projetowebstudio.com.br
  * Description:       Gerenciador de links de afiliado centralizado. Crie links do tipo seusite.com/recomenda/apelido que redirecionam para o link de afiliado real. Se o afiliado mudar, você altera o destino em um só lugar e aplica em todos os artigos. Inclui contagem de cliques e shortcode com botão personalizável.
  * Version:           1.1.0
- * Author:            Cmosdrake
- * Author URI:        https://cmosdrake.com.br
+ * Author:            Marcelo Andrade
+ * Author URI:        https://projetowebstudio.com.br
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       recomenda-links

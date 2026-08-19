@@ -1,7 +1,7 @@
 # Recomenda Links
 
 ![Version](https://img.shields.io/badge/version-1.1.0-2563eb)
-![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-21759b)
+![WordPress](https://img.shields.io/badge/WordPress-testado%207.0.4-21759b)
 ![PHP](https://img.shields.io/badge/PHP-7.0%2B-777bb4)
 ![License](https://img.shields.io/badge/license-GPL--2.0--or--later-3da639)
 
@@ -106,4 +106,4 @@ Veja [CHANGELOG.md](CHANGELOG.md).
 
 ## 👤 Autor
 
-Desenvolvido por **Cmosdrake** — [cmosdrake.com.br](https://cmosdrake.com.br)
+Desenvolvido por **Marcelo Andrade** — [projetowebstudio.com.br](https://projetowebstudio.com.br)
