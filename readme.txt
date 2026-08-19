@@ -4,7 +4,7 @@ Tags: afiliado, affiliate, links, redirect, cloaking
 Requires at least: 5.0
 Tested up to: 7.0.4
 Requires PHP: 7.0
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,10 @@ Sobrescreva as variáveis CSS (--recomenda-bg, --recomenda-cor, --recomenda-radi
 
 == Changelog ==
 
+= 1.1.1 =
+* Autoria do plugin atualizada para Marcelo Andrade (projetowebstudio.com.br).
+* Tested up to atualizado para o WordPress 7.0.4.
+
 = 1.1.0 =
 * Shortcode [recomenda] com link ou botão personalizável.
 * Atributos rel="nofollow sponsored" automáticos.
@@ -49,6 +53,9 @@ Sobrescreva as variáveis CSS (--recomenda-bg, --recomenda-cor, --recomenda-radi
 * Versão inicial: redirecionamento centralizado /recomenda/ e contagem de cliques.
 
 == Upgrade Notice ==
+
+= 1.1.1 =
+Apenas metadados e autoria. Nenhuma mudança de funcionalidade.
 
 = 1.1.0 =
 Adiciona shortcode e botão personalizável. Atualização recomendada.

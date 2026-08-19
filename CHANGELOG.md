@@ -5,6 +5,12 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/)
 e o projeto adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.1.1] - 2026-08-19
+
+### Alterado
+- Autoria do plugin atualizada para Marcelo Andrade — cabeçalho do plugin (`Plugin URI`, `Author`, `Author URI`), crédito no README e `Contributors` do readme.txt.
+- `Tested up to` do readme.txt atualizado para o WordPress 7.0.4.
+
 ## [1.1.0] - 2026-08-19
 
 ### Adicionado
@@ -20,5 +26,6 @@ e o projeto adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 - Contagem de cliques por link, com coluna ordenável na listagem.
 - Redirecionamento 302 (temporário).
 
+[1.1.1]: https://github.com/marcelovianaandrade/recomenda-links/releases/tag/v1.1.1
 [1.1.0]: https://github.com/marcelovianaandrade/recomenda-links/releases/tag/v1.1.0
 [1.0.0]: https://github.com/marcelovianaandrade/recomenda-links/releases/tag/v1.0.0
