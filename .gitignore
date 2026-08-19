@@ -1,0 +1,17 @@
+# Sistemas operacionais
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*~
+
+# Dependências / build
+node_modules/
+vendor/
+*.log
+
+# Arquivos empacotados
+*.zip
