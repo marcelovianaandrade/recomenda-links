@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Recomenda Links
  * Plugin URI:        https://cmosdrake.com.br
- * Description:       Gerenciador de links de afiliado centralizado. Crie links do tipo seusite.com/recomenda/apelido que redirecionam para o link de afiliado real. Se o afiliado mudar, você altera o destino em um só lugar e aplica em todos os artigos. Inclui contagem de cliques.
- * Version:           1.0.0
+ * Description:       Gerenciador de links de afiliado centralizado. Crie links do tipo seusite.com/recomenda/apelido que redirecionam para o link de afiliado real. Se o afiliado mudar, você altera o destino em um só lugar e aplica em todos os artigos. Inclui contagem de cliques e shortcode com botão personalizável.
+ * Version:           1.1.0
  * Author:            Cmosdrake
  * Author URI:        https://cmosdrake.com.br
  * License:           GPL-2.0-or-later
@@ -274,7 +274,117 @@ add_action( 'pre_get_posts', 'recomenda_orderby_clicks' );
 
 /**
  * ============================================================
- * 7. ATIVAÇÃO / DESATIVAÇÃO: recria as regras de URL
+ * 7. SHORTCODE: [recomenda] — link ou botão personalizável
+ * ============================================================
+ *
+ * Exemplos de uso dentro dos artigos:
+ *
+ *   Link simples de texto:
+ *     [recomenda id="furadeira-bosch"]Ver preço na loja[/recomenda]
+ *
+ *   Botão com o estilo padrão do plugin:
+ *     [recomenda id="furadeira-bosch" estilo="botao"]Comprar agora[/recomenda]
+ *
+ *   Botão usando as classes de botão do SEU tema (identidade visual do site):
+ *     [recomenda id="furadeira-bosch" estilo="botao" classe="wp-block-button__link"]Comprar[/recomenda]
+ *
+ * Atributos:
+ *   id      -> apelido do link (obrigatório)
+ *   estilo  -> "link" (padrão) ou "botao"
+ *   classe  -> classes CSS extras, separadas por espaço (aplique as do seu tema)
+ *   rel     -> "on" (padrão, adiciona nofollow sponsored) ou "off"
+ *   target  -> "_blank" (padrão, nova aba) ou "" para abrir na mesma aba
+ */
+function recomenda_shortcode( $atts, $content = null ) {
+	$atts = shortcode_atts(
+		array(
+			'id'     => '',
+			'estilo' => 'link',
+			'classe' => '',
+			'rel'    => 'on',
+			'target' => '_blank',
+		),
+		$atts,
+		'recomenda'
+	);
+
+	$slug = sanitize_title( $atts['id'] );
+	if ( empty( $slug ) ) {
+		return '';
+	}
+
+	$url   = home_url( '/' . RECOMENDA_BASE . '/' . $slug );
+	$texto = ! empty( $content ) ? do_shortcode( $content ) : 'Ver oferta';
+
+	// Monta a lista de classes: base + estilo escolhido + classes do tema.
+	$classes = array( 'recomenda-link' );
+	if ( 'botao' === $atts['estilo'] ) {
+		$classes[] = 'recomenda-btn';
+	}
+	if ( ! empty( $atts['classe'] ) ) {
+		foreach ( explode( ' ', $atts['classe'] ) as $c ) {
+			$c = sanitize_html_class( $c );
+			if ( $c ) {
+				$classes[] = $c;
+			}
+		}
+	}
+
+	$rel    = ( 'off' === strtolower( $atts['rel'] ) ) ? '' : ' rel="nofollow sponsored"';
+	$target = $atts['target'] ? ' target="' . esc_attr( $atts['target'] ) . '"' : '';
+
+	return sprintf(
+		'<a href="%s" class="%s"%s%s>%s</a>',
+		esc_url( $url ),
+		esc_attr( implode( ' ', $classes ) ),
+		$target,
+		$rel,
+		wp_kses_post( $texto )
+	);
+}
+add_shortcode( 'recomenda', 'recomenda_shortcode' );
+
+/**
+ * Estilo padrão do botão (.recomenda-btn).
+ *
+ * Totalmente personalizável para a identidade visual de qualquer site:
+ *   - Troque as cores rapidamente sobrescrevendo as variáveis CSS em
+ *     Aparência > Personalizar > CSS adicional, por exemplo:
+ *
+ *       .recomenda-btn{
+ *           --recomenda-bg:#e11d48;      (cor de fundo)
+ *           --recomenda-cor:#ffffff;     (cor do texto)
+ *           --recomenda-radius:4px;      (arredondamento)
+ *       }
+ *
+ *   - Ou ignore este estilo e use as classes de botão do seu tema pelo
+ *     atributo classe="" no shortcode.
+ */
+function recomenda_button_css() {
+	echo '<style id="recomenda-css">'
+		. '.recomenda-btn{'
+		. '--recomenda-bg:#2563eb;'
+		. '--recomenda-cor:#ffffff;'
+		. '--recomenda-radius:8px;'
+		. '--recomenda-padding:12px 24px;'
+		. 'display:inline-block;'
+		. 'padding:var(--recomenda-padding);'
+		. 'background:var(--recomenda-bg);'
+		. 'color:var(--recomenda-cor);'
+		. 'border-radius:var(--recomenda-radius);'
+		. 'text-decoration:none;'
+		. 'font-weight:600;'
+		. 'line-height:1.2;'
+		. 'transition:opacity .15s ease;'
+		. '}'
+		. '.recomenda-btn:hover{opacity:.88;color:var(--recomenda-cor);}'
+		. '</style>';
+}
+add_action( 'wp_head', 'recomenda_button_css' );
+
+/**
+ * ============================================================
+ * 8. ATIVAÇÃO / DESATIVAÇÃO: recria as regras de URL
  * ============================================================
  */
 function recomenda_activate() {
