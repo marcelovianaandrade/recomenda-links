@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Recomenda Links
  * Plugin URI:        https://projetowebstudio.com.br
- * Description:       Gerenciador de links de afiliado centralizado. Crie links do tipo seusite.com/recomenda/apelido que redirecionam para o link de afiliado real. Se o afiliado mudar, você altera o destino em um só lugar e aplica em todos os artigos. Inclui contagem de cliques, relatórios por período e por artigo, tipos de ferramenta com filtro, verificador de links quebrados, troca em massa, importação/exportação CSV e shortcode com botão personalizável.
- * Version:           1.3.0
+ * Description:       Gerenciador de links de afiliado centralizado. Crie links do tipo seusite.com/recomenda/apelido que redirecionam para o link de afiliado real. Se o afiliado mudar, você altera o destino em um só lugar e aplica em todos os artigos. Inclui contagem de cliques, relatórios por período e por artigo, tipos de ferramenta com filtro, verificador de links quebrados, troca em massa, importação/exportação CSV e shortcode com botão ou card de produto (imagem, descrição e botão).
+ * Version:           1.4.0
  * Author:            Marcelo Andrade
  * Author URI:        https://projetowebstudio.com.br
  * License:           GPL-2.0-or-later
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Versão do plugin (usada para rodar a atualização automática do banco).
-define( 'RECOMENDA_VERSION', '1.3.0' );
+define( 'RECOMENDA_VERSION', '1.4.0' );
 
 // Slug base usado nas URLs: seusite.com/recomenda/apelido
 if ( ! defined( 'RECOMENDA_BASE' ) ) {
@@ -50,6 +50,10 @@ function recomenda_register_cpt() {
 		'not_found'          => 'Nenhum link encontrado',
 		'not_found_in_trash' => 'Nenhum link na lixeira',
 		'all_items'          => 'Todos os links',
+		'featured_image'        => 'Imagem do produto',
+		'set_featured_image'    => 'Definir imagem do produto',
+		'remove_featured_image' => 'Remover imagem do produto',
+		'use_featured_image'    => 'Usar como imagem do produto',
 	);
 
 	$args = array(
@@ -60,7 +64,7 @@ function recomenda_register_cpt() {
 		'show_in_menu'        => true,
 		'menu_icon'           => 'dashicons-admin-links',
 		'menu_position'       => 30,
-		'supports'            => array( 'title' ), // Só o título (nome interno do link).
+		'supports'            => array( 'title', 'thumbnail' ), // Título (nome do produto) e imagem do produto.
 		'capability_type'     => 'post',
 		'has_archive'         => false,
 		'rewrite'             => false,      // Nós criamos a regra de URL manualmente.
@@ -70,6 +74,41 @@ function recomenda_register_cpt() {
 	register_post_type( 'recomenda_link', $args );
 }
 add_action( 'init', 'recomenda_register_cpt' );
+
+// Garante o quadro "Imagem do produto" mesmo em temas sem imagem destacada.
+function recomenda_thumbnail_support() {
+	add_theme_support( 'post-thumbnails', array( 'recomenda_link' ) );
+}
+add_action( 'after_setup_theme', 'recomenda_thumbnail_support', 99 );
+
+/**
+ * Imagem do link: a "Imagem do produto" enviada para a biblioteca de mídia
+ * tem prioridade; se não houver, usa a URL de imagem informada.
+ * Retorna a tag <img> pronta ou ''.
+ */
+function recomenda_image_html( $link_id, $size = 'medium', $class = '' ) {
+	$alt = get_the_title( $link_id );
+	if ( has_post_thumbnail( $link_id ) ) {
+		return get_the_post_thumbnail( $link_id, $size, array(
+			'class'   => $class,
+			'alt'     => $alt,
+			'loading' => 'lazy',
+		) );
+	}
+	$url = get_post_meta( $link_id, '_recomenda_imagem_url', true );
+	if ( $url ) {
+		return '<img src="' . esc_url( $url ) . '" alt="' . esc_attr( $alt ) . '" class="' . esc_attr( $class ) . '" loading="lazy" decoding="async">';
+	}
+	return '';
+}
+
+// URL da imagem do link (para a exportação CSV).
+function recomenda_image_url( $link_id ) {
+	if ( has_post_thumbnail( $link_id ) ) {
+		return (string) get_the_post_thumbnail_url( $link_id, 'full' );
+	}
+	return (string) get_post_meta( $link_id, '_recomenda_imagem_url', true );
+}
 
 /**
  * Tipos de link (ex.: Serras, Brocas, Plainas). Funciona como as categorias
@@ -514,6 +553,30 @@ function recomenda_render_meta_box( $post ) {
 			style="width:100%; max-width:640px;" />
 	</p>
 
+	<?php $descricao = get_post_meta( $post->ID, '_recomenda_descricao', true ); ?>
+	<p>
+		<label for="recomenda_descricao"><strong>Descrição curta do produto:</strong></label><br>
+		<textarea id="recomenda_descricao" name="recomenda_descricao" rows="3"
+			style="width:100%; max-width:640px;"
+			placeholder="Ex.: Plaina 710 W com regulagem de profundidade, ideal para desbaste de madeira."><?php echo esc_textarea( $descricao ); ?></textarea><br>
+		<span style="color:#666;">Aparece no card do produto nos artigos e na lista de links. Recomendado: até 200 caracteres.</span>
+	</p>
+
+	<?php $imagem_url = get_post_meta( $post->ID, '_recomenda_imagem_url', true ); ?>
+	<p>
+		<label for="recomenda_imagem_url"><strong>URL da imagem (opcional):</strong></label><br>
+		<input type="url" id="recomenda_imagem_url" name="recomenda_imagem_url"
+			value="<?php echo esc_attr( $imagem_url ); ?>"
+			placeholder="https://..."
+			style="width:100%; max-width:640px;" /><br>
+		<span style="color:#666;">Use o quadro <strong>Imagem do produto</strong> (ao lado) para enviar uma foto sua, ou cole aqui o endereço de uma imagem. Se as duas existirem, vale a Imagem do produto.
+		Para produtos da Amazon, use o link de imagem gerado pela barra SiteStripe da própria Amazon.</span>
+	</p>
+	<?php $img = recomenda_image_html( $post->ID, 'thumbnail' ); ?>
+	<?php if ( $img ) : ?>
+		<p class="recomenda-img-preview"><?php echo $img; // phpcs:ignore WordPress.Security.EscapeOutput -- já escapado. ?></p>
+	<?php endif; ?>
+
 	<?php if ( $post->post_name ) : ?>
 		<?php $pretty = recomenda_pretty_url( $post ); ?>
 	<p>
@@ -624,6 +687,19 @@ function recomenda_save_meta( $post_id ) {
 		}
 	}
 
+	if ( isset( $_POST['recomenda_descricao'] ) ) {
+		update_post_meta( $post_id, '_recomenda_descricao', sanitize_textarea_field( wp_unslash( $_POST['recomenda_descricao'] ) ) );
+	}
+
+	if ( isset( $_POST['recomenda_imagem_url'] ) ) {
+		$imagem = recomenda_validate_url( wp_unslash( $_POST['recomenda_imagem_url'] ) );
+		if ( false === $imagem ) {
+			recomenda_add_notice( 'error', '<strong>URL da imagem inválida.</strong> Use um endereço completo começando com http:// ou https://. A imagem anterior foi mantida.' );
+		} else {
+			update_post_meta( $post_id, '_recomenda_imagem_url', $imagem );
+		}
+	}
+
 	if ( ! empty( $_POST['recomenda_reset_clicks'] ) ) {
 		update_post_meta( $post_id, '_recomenda_clicks', 0 );
 	}
@@ -644,8 +720,12 @@ add_action( 'save_post_recomenda_link', 'recomenda_ensure_clicks_meta', 5 );
 function recomenda_columns( $columns ) {
 	$new = array();
 	foreach ( $columns as $key => $label ) {
+		if ( 'title' === $key ) {
+			$new['recomenda_img'] = '<span class="screen-reader-text">Imagem</span>';
+		}
 		$new[ $key ] = $label;
 		if ( 'title' === $key ) {
+			$new['recomenda_desc']   = 'Descrição';
 			$new['recomenda_url']    = 'Link (/' . RECOMENDA_BASE . '/)';
 			$new['recomenda_target'] = 'Destino';
 			$new['recomenda_clicks'] = 'Cliques';
@@ -659,6 +739,18 @@ function recomenda_columns( $columns ) {
 add_filter( 'manage_recomenda_link_posts_columns', 'recomenda_columns' );
 
 function recomenda_render_columns( $column, $post_id ) {
+	if ( 'recomenda_img' === $column ) {
+		$img = recomenda_image_html( $post_id, 'thumbnail', 'recomenda-thumb' );
+		echo $img ? $img : '<span class="recomenda-thumb recomenda-thumb--vazio" aria-hidden="true"></span>'; // phpcs:ignore WordPress.Security.EscapeOutput -- já escapado.
+	}
+
+	if ( 'recomenda_desc' === $column ) {
+		$descricao = get_post_meta( $post_id, '_recomenda_descricao', true );
+		echo $descricao
+			? '<span style="font-size:12px;">' . esc_html( wp_html_excerpt( $descricao, 120, '…' ) ) . '</span>'
+			: '<span style="color:#a7aaad;">—</span>';
+	}
+
 	if ( 'recomenda_url' === $column ) {
 		$post   = get_post( $post_id );
 		$pretty = recomenda_pretty_url( $post );
@@ -760,10 +852,12 @@ add_action( 'admin_notices', 'recomenda_broken_notice' );
  */
 function recomenda_copy_buttons( $post ) {
 	$shortcode = '[recomenda id="' . $post->post_name . '"]Ver oferta[/recomenda]';
+	$card      = '[recomenda id="' . $post->post_name . '" estilo="card"]Ver na loja[/recomenda]';
 	printf(
-		'<span class="recomenda-copy-group"><button type="button" class="button button-small recomenda-copy" data-copy="%s">copiar link</button> <button type="button" class="button button-small recomenda-copy" data-copy="%s">copiar shortcode</button></span>',
+		'<span class="recomenda-copy-group"><button type="button" class="button button-small recomenda-copy" data-copy="%s">copiar link</button> <button type="button" class="button button-small recomenda-copy" data-copy="%s">copiar shortcode</button> <button type="button" class="button button-small recomenda-copy" data-copy="%s">copiar card</button></span>',
 		esc_attr( urldecode( recomenda_pretty_url( $post ) ) ),
-		esc_attr( $shortcode )
+		esc_attr( $shortcode ),
+		esc_attr( $card )
 	);
 }
 
@@ -773,7 +867,14 @@ function recomenda_admin_footer_js() {
 		return;
 	}
 	?>
-	<style>.recomenda-copy-group{white-space:nowrap}.recomenda-copy-group .button-small{margin-top:3px}</style>
+	<style>
+		.recomenda-copy-group{white-space:nowrap}.recomenda-copy-group .button-small{margin-top:3px}
+		.column-recomenda_img{width:56px}
+		.recomenda-thumb{display:block;width:48px;height:48px;object-fit:contain;background:#fff;border:1px solid #dcdcde;border-radius:4px}
+		.recomenda-thumb--vazio{background:#f6f7f7}
+		.column-recomenda_desc{width:18%}
+		.recomenda-img-preview img{max-width:120px;height:auto;border:1px solid #dcdcde;border-radius:4px;background:#fff}
+	</style>
 	<script>
 	(function () {
 		function fallback(text) {
@@ -1048,9 +1149,15 @@ add_action( 'admin_post_recomenda_check', 'recomenda_handle_check' );
  *   Botão usando as classes de botão do SEU tema (identidade visual do site):
  *     [recomenda id="furadeira-bosch" estilo="botao" classe="wp-block-button__link"]Comprar[/recomenda]
  *
+ *   Card do produto (imagem, título, descrição e botão):
+ *     [recomenda id="furadeira-bosch" estilo="card"]Ver na loja[/recomenda]
+ *
  * Atributos:
- *   id      -> apelido do link (obrigatório)
- *   estilo  -> "link" (padrão) ou "botao"
+ *   id        -> apelido do link (obrigatório)
+ *   estilo    -> "link" (padrão), "botao" ou "card"
+ *   titulo    -> (card) título exibido; padrão: o título do link
+ *   descricao -> (card) descrição exibida; padrão: a descrição do link
+ *   imagem    -> (card) "off" para esconder a imagem
  *   classe  -> classes CSS extras, separadas por espaço (aplique as do seu tema)
  *   rel     -> "on" (padrão, adiciona nofollow sponsored) ou "off"
  *   target  -> "_blank" (padrão, nova aba) ou "" para abrir na mesma aba
@@ -1059,8 +1166,11 @@ function recomenda_shortcode( $atts, $content = null ) {
 	$atts = shortcode_atts(
 		array(
 			'id'     => '',
-			'estilo' => 'link',
-			'classe' => '',
+			'estilo'    => 'link',
+			'classe'    => '',
+			'titulo'    => '',
+			'descricao' => '',
+			'imagem'    => 'on',
 			'rel'    => 'on',
 			'target' => '_blank',
 		),
@@ -1114,6 +1224,10 @@ function recomenda_shortcode( $atts, $content = null ) {
 	$rel    = $rel_values ? ' rel="' . esc_attr( implode( ' ', $rel_values ) ) . '"' : '';
 	$target = $atts['target'] ? ' target="' . esc_attr( $atts['target'] ) . '"' : '';
 
+	if ( 'card' === $atts['estilo'] ) {
+		return recomenda_card_html( $link, $atts, $url, $classes, $target . $rel, $content );
+	}
+
 	return sprintf(
 		'<a href="%s" class="%s"%s%s>%s</a>',
 		esc_url( $url ),
@@ -1122,6 +1236,41 @@ function recomenda_shortcode( $atts, $content = null ) {
 		$rel,
 		wp_kses_post( $texto )
 	);
+}
+
+/**
+ * Card do produto: imagem, título, descrição e botão. Todos os links do card
+ * passam pelo /recomenda/apelido, então os cliques continuam sendo contados.
+ *
+ * Personalize em Aparência > Personalizar > CSS adicional, por exemplo:
+ *   .recomenda-card{ --recomenda-card-borda:#e11d48; --recomenda-card-radius:4px; }
+ */
+function recomenda_card_html( $link, $atts, $url, $classes, $link_attrs, $content ) {
+	wp_enqueue_style( 'recomenda-links' );
+
+	$titulo    = '' !== $atts['titulo'] ? $atts['titulo'] : get_the_title( $link );
+	$descricao = '' !== $atts['descricao'] ? $atts['descricao'] : get_post_meta( $link->ID, '_recomenda_descricao', true );
+	$botao     = ! empty( $content ) ? do_shortcode( $content ) : 'Ver na loja';
+	$imagem    = 'off' !== strtolower( $atts['imagem'] ) ? recomenda_image_html( $link->ID, 'medium' ) : '';
+
+	// O botão do card usa o estilo .recomenda-btn, a menos que o tema forneça as classes.
+	$classes   = array_diff( $classes, array( 'recomenda-link' ) );
+	$btn_class = array_merge( array( 'recomenda-link', 'recomenda-card__btn' ), $atts['classe'] ? array() : array( 'recomenda-btn' ), $classes );
+
+	$href = esc_url( $url );
+	$out  = '<div class="recomenda-card' . ( $imagem ? '' : ' recomenda-card--sem-imagem' ) . '">';
+	if ( $imagem ) {
+		$out .= '<a class="recomenda-card__img" href="' . $href . '"' . $link_attrs . ' tabindex="-1" aria-hidden="true">' . $imagem . '</a>';
+	}
+	$out .= '<div class="recomenda-card__corpo">';
+	$out .= '<p class="recomenda-card__titulo"><a href="' . $href . '"' . $link_attrs . '>' . esc_html( $titulo ) . '</a></p>';
+	if ( $descricao ) {
+		$out .= '<p class="recomenda-card__desc">' . esc_html( $descricao ) . '</p>';
+	}
+	$out .= '<a href="' . $href . '" class="' . esc_attr( implode( ' ', array_unique( $btn_class ) ) ) . '"' . $link_attrs . '>' . wp_kses_post( $botao ) . '</a>';
+	$out .= '</div></div>';
+
+	return $out;
 }
 add_shortcode( 'recomenda', 'recomenda_shortcode' );
 
@@ -1159,7 +1308,27 @@ function recomenda_button_css() {
 		. 'line-height:1.2;'
 		. 'transition:opacity .15s ease;'
 		. '}'
-		. '.recomenda-btn:hover{opacity:.88;color:var(--recomenda-cor);}';
+		. '.recomenda-btn:hover{opacity:.88;color:var(--recomenda-cor);}'
+		. '.recomenda-card{'
+		. '--recomenda-card-borda:rgba(0,0,0,.12);'
+		. '--recomenda-card-fundo:transparent;'
+		. '--recomenda-card-radius:12px;'
+		. '--recomenda-card-img:160px;'
+		. 'display:flex;flex-wrap:wrap;gap:20px;align-items:center;'
+		. 'margin:24px 0;padding:20px;'
+		. 'border:1px solid var(--recomenda-card-borda);'
+		. 'border-radius:var(--recomenda-card-radius);'
+		. 'background:var(--recomenda-card-fundo);'
+		. '}'
+		. '.recomenda-card__img{flex:0 0 var(--recomenda-card-img);max-width:100%;display:block;text-align:center;}'
+		. '.recomenda-card__img img{display:block;width:100%;height:var(--recomenda-card-img);object-fit:contain;margin:0 auto;border-radius:8px;background:#fff;}'
+		. '.recomenda-card__corpo{flex:1 1 240px;min-width:0;}'
+		. '.recomenda-card__titulo{margin:0 0 8px;font-size:1.15em;font-weight:700;line-height:1.3;}'
+		. '.recomenda-card__titulo a{color:inherit;text-decoration:none;}'
+		. '.recomenda-card__titulo a:hover{text-decoration:underline;}'
+		. '.recomenda-card__desc{margin:0 0 16px;opacity:.85;line-height:1.5;}'
+		. '.recomenda-card .recomenda-card__btn{margin:0;}'
+		. '@media (max-width:480px){.recomenda-card{padding:16px;}.recomenda-card__img{flex-basis:100%;}}';
 }
 
 function recomenda_register_assets() {
@@ -1544,7 +1713,7 @@ function recomenda_render_tools() {
 
 		<div class="card" style="max-width:900px;">
 			<h2>Importar links (CSV)</h2>
-			<p>Colunas aceitas (com cabeçalho): <code>slug</code>, <code>titulo</code>, <code>destino</code>, <code>cliques</code>, <code>status</code>, <code>tipo</code> (vários tipos separados por <code>|</code>; tipos que não existem são criados). Separador vírgula ou ponto e vírgula. O mesmo formato da exportação.</p>
+			<p>Colunas aceitas (com cabeçalho): <code>slug</code>, <code>titulo</code>, <code>destino</code>, <code>cliques</code>, <code>status</code>, <code>tipo</code> (vários tipos separados por <code>|</code>; tipos que não existem são criados), <code>descricao</code>, <code>imagem</code> (URL). Separador vírgula ou ponto e vírgula. O mesmo formato da exportação.</p>
 			<p><strong>Nenhum link é apagado.</strong> O total de cliques só é usado para links novos; nos que já existem, o contador não é alterado.</p>
 			<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="recomenda_import">
@@ -1686,7 +1855,7 @@ function recomenda_handle_export() {
 
 	$out = fopen( 'php://output', 'w' );
 	fwrite( $out, "\xEF\xBB\xBF" ); // BOM: o Excel reconhece os acentos.
-	fputcsv( $out, array( 'slug', 'titulo', 'destino', 'cliques', 'status', 'tipo' ), ';' );
+	fputcsv( $out, array( 'slug', 'titulo', 'destino', 'cliques', 'status', 'tipo', 'descricao', 'imagem' ), ';' );
 	foreach ( $posts as $p ) {
 		fputcsv( $out, array(
 			$p->post_name,
@@ -1695,6 +1864,8 @@ function recomenda_handle_export() {
 			(int) get_post_meta( $p->ID, '_recomenda_clicks', true ),
 			$p->post_status,
 			recomenda_get_tipos_text( $p->ID ),
+			recomenda_csv_safe( (string) get_post_meta( $p->ID, '_recomenda_descricao', true ) ),
+			recomenda_image_url( $p->ID ),
 		), ';' );
 	}
 	fclose( $out );
@@ -1733,6 +1904,19 @@ function recomenda_handle_import() {
 }
 add_action( 'admin_post_recomenda_import', 'recomenda_handle_import' );
 
+// Descrição e URL da imagem vindas do CSV (vazio = mantém o que já existe).
+function recomenda_import_extras( $link_id, $descricao, $imagem ) {
+	$descricao = preg_replace( "/^'(?=[=+\-@])/", '', $descricao );
+	if ( '' !== $descricao ) {
+		update_post_meta( $link_id, '_recomenda_descricao', sanitize_textarea_field( $descricao ) );
+	}
+	$imagem = recomenda_validate_url( $imagem );
+	// Não duplica a imagem do produto já enviada para a biblioteca de mídia.
+	if ( $imagem && ! has_post_thumbnail( $link_id ) ) {
+		update_post_meta( $link_id, '_recomenda_imagem_url', $imagem );
+	}
+}
+
 function recomenda_import_csv( $csv, $update_existing ) {
 	$result = array( 'created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => array() );
 
@@ -1743,7 +1927,7 @@ function recomenda_import_csv( $csv, $update_existing ) {
 	fwrite( $fh, $csv );
 	rewind( $fh );
 
-	$map  = array( 'slug' => 0, 'titulo' => 1, 'destino' => 2, 'cliques' => 3, 'status' => 4, 'tipo' => 5 );
+	$map  = array( 'slug' => 0, 'titulo' => 1, 'destino' => 2, 'cliques' => 3, 'status' => 4, 'tipo' => 5, 'descricao' => 6, 'imagem' => 7 );
 	$line = 0;
 
 	while ( false !== ( $row = fgetcsv( $fh, 0, $delimiter ) ) ) {
@@ -1806,6 +1990,7 @@ function recomenda_import_csv( $csv, $update_existing ) {
 				recomenda_clear_health( $id );
 			}
 			recomenda_set_tipos( $id, $get( 'tipo' ) ); // Vazio = mantém os tipos atuais.
+			recomenda_import_extras( $id, $get( 'descricao' ), $get( 'imagem' ) );
 			$result['updated']++;
 			continue;
 		}
@@ -1825,6 +2010,7 @@ function recomenda_import_csv( $csv, $update_existing ) {
 		update_post_meta( $id, '_recomenda_target', $dest );
 		update_post_meta( $id, '_recomenda_clicks', max( 0, (int) $get( 'cliques' ) ) );
 		recomenda_set_tipos( $id, $get( 'tipo' ) );
+		recomenda_import_extras( $id, $get( 'descricao' ), $get( 'imagem' ) );
 		$result['created']++;
 	}
 

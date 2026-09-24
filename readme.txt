@@ -4,7 +4,7 @@ Tags: afiliado, affiliate, links, redirect, cloaking
 Requires at least: 5.0
 Tested up to: 7.0.4
 Requires PHP: 7.0
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,7 +18,8 @@ Recursos:
 
 * Links centralizados com o prefixo /recomenda/.
 * Contagem de cliques por link, com coluna ordenável.
-* Shortcode [recomenda] para link ou botão.
+* Shortcode [recomenda] para link, botão ou card do produto (imagem, descrição e botão).
+* Imagem e descrição em cada link.
 * Botão personalizável para a identidade visual de qualquer site.
 * rel="nofollow sponsored" automático.
 * Redirecionamento 302 (temporário).
@@ -59,6 +60,11 @@ A Amazon responde erro a qualquer verificação automática, então os links del
 
 == Changelog ==
 
+= 1.4.0 =
+* Imagem e descrição do produto em cada link, com miniatura na lista.
+* Card do produto no shortcode: [recomenda id="..." estilo="card"].
+* Colunas descricao e imagem no CSV.
+
 = 1.3.0 =
 * Tipos de link (Serras, Brocas...) com filtro na lista, edição rápida e em massa.
 * Relatórios de cliques por dia, por artigo de origem e por tipo.
@@ -79,6 +85,9 @@ A Amazon responde erro a qualquer verificação automática, então os links del
 * Versão inicial: redirecionamento centralizado /recomenda/ e contagem de cliques.
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Imagem, descrição e card do produto. Os links já cadastrados são mantidos.
 
 = 1.3.0 =
 Tipos de link, relatórios, verificador de links, troca em massa e CSV. Os links e cliques já cadastrados são mantidos.

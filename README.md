@@ -1,6 +1,6 @@
 # Recomenda Links
 
-![Version](https://img.shields.io/badge/version-1.3.0-2563eb)
+![Version](https://img.shields.io/badge/version-1.4.0-2563eb)
 ![WordPress](https://img.shields.io/badge/WordPress-testado%207.0.4-21759b)
 ![PHP](https://img.shields.io/badge/PHP-7.0%2B-777bb4)
 ![License](https://img.shields.io/badge/license-GPL--2.0--or--later-3da639)
@@ -15,7 +15,8 @@ Em vez de colar o link de afiliado direto em cada artigo, você cria um link "ap
 
 - **Links centralizados** com o prefixo `/recomenda/` — troca o destino em um lugar, aplica em todos os artigos.
 - **Contagem de cliques** por link, com coluna ordenável na listagem.
-- **Shortcode** `[recomenda]` para inserir link ou botão nos artigos.
+- **Shortcode** `[recomenda]` para inserir link, botão ou **card do produto** (imagem, título, descrição e botão) nos artigos.
+- **Imagem e descrição** em cada link, com miniatura na lista.
 - **Botão personalizável** para a identidade visual de qualquer site (variáveis CSS ou classes do seu tema).
 - Atributos `rel="nofollow sponsored"` automáticos (recomendação do Google para afiliados).
 - Redirecionamento **302 (temporário)**, ideal para links de afiliado.
@@ -24,7 +25,7 @@ Em vez de colar o link de afiliado direto em cada artigo, você cria um link "ap
 - **Verificador de links quebrados** semanal, com coluna "Situação" e filtro "Com problema".
 - **Troca em massa** do código de afiliado em todas as URLs de destino, com pré-visualização.
 - **Exportar e importar CSV**, que também serve de backup.
-- Botões **copiar link** e **copiar shortcode**.
+- Botões **copiar link**, **copiar shortcode** e **copiar card**.
 - Contagem que ignora robôs, pré-visualizações e quem edita o site.
 - Leve e sem dependências externas — um único arquivo PHP.
 
@@ -61,7 +62,7 @@ Para classificar muitos links de uma vez, exporte o CSV, preencha a coluna `tipo
 - **Recomenda Links → Relatórios**: gráfico de cliques por dia, links mais clicados e artigos que mais geram cliques. Clique num link para ver de quais artigos vêm os cliques dele.
 - **Recomenda Links → Ferramentas**:
   - *Trocar código de afiliado em massa*: por exemplo, trocar `tag=antigo-20` por `tag=novo-20` em todos os destinos.
-  - *Exportar/Importar CSV*: colunas `slug;titulo;destino;cliques;status;tipo`. A importação nunca apaga links.
+  - *Exportar/Importar CSV*: colunas `slug;titulo;destino;cliques;status;tipo;descricao;imagem`. A importação nunca apaga links.
   - *Verificar todos agora*: dispara a verificação de links quebrados sem esperar a rotina semanal.
 
 > Os cliques por dia e por artigo começam a ser registrados a partir da versão 1.3.0. O total de cada link, contado antes, é mantido.
@@ -77,15 +78,41 @@ Botão com o estilo padrão:
 
 Botão com as classes de botão do seu tema:
 [recomenda id="furadeira-bosch" estilo="botao" classe="wp-block-button__link"]Comprar[/recomenda]
+
+Card do produto (imagem, título, descrição e botão):
+[recomenda id="furadeira-bosch" estilo="card"]Ver na loja[/recomenda]
 ```
 
 | Atributo | Valores | Padrão | Descrição |
 |----------|---------|--------|-----------|
 | `id`     | apelido do link | — | **Obrigatório.** O slug do link. |
-| `estilo` | `link` \| `botao` | `link` | Renderiza como texto ou botão. |
+| `estilo` | `link` \| `botao` \| `card` | `link` | Renderiza como texto, botão ou card do produto. |
+| `titulo` | texto | título do link | *(card)* Título exibido no card. |
+| `descricao` | texto | descrição do link | *(card)* Descrição exibida no card. |
+| `imagem` | `on` \| `off` | `on` | *(card)* Mostra ou esconde a imagem. |
 | `classe` | classes CSS | — | Classes extras (ex.: as do seu tema). |
 | `rel`    | `on` \| `off` | `on` | Adiciona `rel="nofollow sponsored"`. |
 | `target` | `_blank` \| vazio | `_blank` | Abre em nova aba. |
+
+### 🖼️ Imagem, descrição e card do produto
+
+Na tela de cada link:
+- **Imagem do produto** (quadro ao lado): envie uma foto pela biblioteca de mídia.
+- **URL da imagem**: alternativa sem enviar arquivo. Para produtos da Amazon, use o link de imagem gerado pela barra **SiteStripe**. Se as duas existirem, vale a Imagem do produto.
+- **Descrição curta**: até cerca de 200 caracteres.
+
+O card se adapta ao celular: a imagem vai para cima e o texto fica embaixo. Para mudar o visual, use o *CSS adicional*:
+
+```css
+.recomenda-card{
+    --recomenda-card-borda:#e5e7eb;   /* cor da borda */
+    --recomenda-card-fundo:#ffffff;   /* fundo do card */
+    --recomenda-card-radius:12px;     /* arredondamento */
+    --recomenda-card-img:160px;       /* tamanho da imagem */
+}
+```
+
+O botão do card usa o mesmo estilo `.recomenda-btn`, ou as classes do seu tema via `classe="..."`.
 
 ### 🎨 Personalizar o visual do botão
 

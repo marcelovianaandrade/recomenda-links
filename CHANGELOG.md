@@ -5,6 +5,16 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/)
 e o projeto adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.4.0] - 2026-09-24
+
+### Adicionado
+- **Imagem do produto** em cada link: envie uma foto pela biblioteca de mídia ou informe a URL de uma imagem (por exemplo, a imagem do SiteStripe da Amazon).
+- **Descrição curta do produto** em cada link.
+- Colunas de imagem (miniatura) e descrição na lista de links.
+- **Card do produto** no shortcode: `[recomenda id="..." estilo="card"]Ver na loja[/recomenda]` mostra imagem, título, descrição e botão. Aceita os atributos `titulo`, `descricao`, `imagem="off"` e `classe`, e é personalizável por variáveis CSS. Os cliques continuam sendo contados.
+- Botão "copiar card" na lista e na tela de edição.
+- Colunas `descricao` e `imagem` na exportação e na importação CSV.
+
 ## [1.3.0] - 2026-09-24
 
 ### Adicionado
@@ -52,6 +62,7 @@ e o projeto adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 - Contagem de cliques por link, com coluna ordenável na listagem.
 - Redirecionamento 302 (temporário).
 
+[1.4.0]: https://github.com/marcelovianaandrade/recomenda-links/releases/tag/v1.4.0
 [1.3.0]: https://github.com/marcelovianaandrade/recomenda-links/releases/tag/v1.3.0
 [1.1.1]: https://github.com/marcelovianaandrade/recomenda-links/releases/tag/v1.1.1
 [1.1.0]: https://github.com/marcelovianaandrade/recomenda-links/releases/tag/v1.1.0
