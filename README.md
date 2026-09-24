@@ -1,6 +1,6 @@
 # Recomenda Links
 
-![Version](https://img.shields.io/badge/version-1.1.1-2563eb)
+![Version](https://img.shields.io/badge/version-1.3.0-2563eb)
 ![WordPress](https://img.shields.io/badge/WordPress-testado%207.0.4-21759b)
 ![PHP](https://img.shields.io/badge/PHP-7.0%2B-777bb4)
 ![License](https://img.shields.io/badge/license-GPL--2.0--or--later-3da639)
@@ -19,6 +19,13 @@ Em vez de colar o link de afiliado direto em cada artigo, você cria um link "ap
 - **Botão personalizável** para a identidade visual de qualquer site (variáveis CSS ou classes do seu tema).
 - Atributos `rel="nofollow sponsored"` automáticos (recomendação do Google para afiliados).
 - Redirecionamento **302 (temporário)**, ideal para links de afiliado.
+- **Relatórios** de cliques por dia (7, 30 ou 90 dias) e por **artigo de origem**.
+- **Tipos de link** (Serras, Brocas, Plainas…) com filtro na lista e nos relatórios.
+- **Verificador de links quebrados** semanal, com coluna "Situação" e filtro "Com problema".
+- **Troca em massa** do código de afiliado em todas as URLs de destino, com pré-visualização.
+- **Exportar e importar CSV**, que também serve de backup.
+- Botões **copiar link** e **copiar shortcode**.
+- Contagem que ignora robôs, pré-visualizações e quem edita o site.
 - Leve e sem dependências externas — um único arquivo PHP.
 
 ## 📦 Instalação
@@ -38,6 +45,26 @@ Em vez de colar o link de afiliado direto em cada artigo, você cria um link "ap
 5. Quando o afiliado mudar, edite a **URL de destino** e salve — pronto, aplicou em todos os artigos.
 
 O apelido na URL vem do **slug** do link (editável ao lado do título).
+
+## 🗂️ Tipos de link
+
+Em **Recomenda Links → Tipos**, crie os tipos (por exemplo Serras, Brocas, Plainas). Eles aceitam subtipos, como "Serras › Serra circular". Depois:
+
+- marque o tipo na tela do link, ou use **Edição rápida** ou **Editar em massa** para vários links de uma vez;
+- filtre a lista pelo seletor **Todos os tipos**, ou clique no nome do tipo na coluna "Tipos";
+- veja os **Cliques por tipo** e filtre o relatório por tipo em **Relatórios**.
+
+Para classificar muitos links de uma vez, exporte o CSV, preencha a coluna `tipo` e importe com a opção **atualizar título e destino**.
+
+## 📊 Relatórios e ferramentas
+
+- **Recomenda Links → Relatórios**: gráfico de cliques por dia, links mais clicados e artigos que mais geram cliques. Clique num link para ver de quais artigos vêm os cliques dele.
+- **Recomenda Links → Ferramentas**:
+  - *Trocar código de afiliado em massa*: por exemplo, trocar `tag=antigo-20` por `tag=novo-20` em todos os destinos.
+  - *Exportar/Importar CSV*: colunas `slug;titulo;destino;cliques;status;tipo`. A importação nunca apaga links.
+  - *Verificar todos agora*: dispara a verificação de links quebrados sem esperar a rotina semanal.
+
+> Os cliques por dia e por artigo começam a ser registrados a partir da versão 1.3.0. O total de cada link, contado antes, é mantido.
 
 ## 🔗 Shortcode e botão
 
@@ -88,13 +115,23 @@ Não. O benefício central — trocar o link em um lugar só — funciona igual 
 O link que aparece no artigo é interno (do seu domínio). O destino de afiliado fica no redirecionamento 302, que não é indexado. O shortcode ainda aplica `rel="nofollow sponsored"` por padrão.
 
 **Os cliques contam visitas de robôs?**
-O contador incrementa a cada acesso à URL `/recomenda/...`. Para métricas de campanha, use em conjunto com sua ferramenta de analytics.
+Não. A contagem ignora robôs de busca, pré-visualizações (WhatsApp, Facebook, Telegram…), pré-carregamento do navegador e usuários logados que editam o site. Para testar, use uma janela anônima.
+
+**Vou perder meus links ao atualizar?**
+Não. Os links, destinos e cliques continuam no banco do WordPress com os mesmos nomes de campos. Atualize substituindo o plugin (sem desinstalar) e faça um backup do banco antes, por segurança.
+
+**Meus links da Amazon aparecem como quebrados. O que fazer?**
+A Amazon responde erro 404 a qualquer verificação automática, mesmo com o link funcionando. Por isso, links `amazon.*`, `amzn.to`, `link.amazon` e `a.co` não são verificados e aparecem como "não verificável". Se todos os seus links forem da Amazon, você pode desligar o verificador em **Ferramentas**.
+
+**Um link aparece como "Não confirmado". Está quebrado?**
+Não necessariamente. Algumas lojas, como a Amazon, bloqueiam verificações automáticas. Teste o link manualmente. "Quebrado" só aparece para página inexistente (404/410) ou site fora do ar em duas verificações seguidas.
 
 ## 🗺️ Roadmap
 
-- [ ] Relatório de cliques por período
-- [ ] Importação/exportação de links em CSV
-- [ ] Grupos/categorias de links
+- [x] Relatório de cliques por período
+- [x] Importação/exportação de links em CSV
+- [x] Grupos/categorias de links (tipos)
+- [ ] URL reserva para ofertas expiradas
 
 ## 📜 Changelog
 
